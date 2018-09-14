@@ -9,6 +9,10 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -38,7 +42,10 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.honhai.foxconn.kmera.Tools.DirectionVerifier;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -51,22 +58,29 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SensorEventListener{
 
-    private final String TAG = "MainActivity";
+    private final String TAG = "DEBUG";
     private final int REQUEST_CODE_CAMERA = 1;
     private final int REQUEST_CODE_ACCESS_STORAGE = 2;
     private static final SparseIntArray ORIENTATION = new SparseIntArray();
 
     static {
-        ORIENTATION.append(Surface.ROTATION_0, 90);
-        ORIENTATION.append(Surface.ROTATION_90, 0);
-        ORIENTATION.append(Surface.ROTATION_180, 270);
-        ORIENTATION.append(Surface.ROTATION_270, 180);
+        ORIENTATION.append(0, 90);
+        ORIENTATION.append(90, 180);
+        ORIENTATION.append(180, 270);
+        ORIENTATION.append(270, 0);
     }
 
+    TextView azimuthText , pitchText , rollText;
+
+    int azimuth,pitch,roll;
+    int rotation;
+    float[] accelerometerValues = new float[3];
+    float[] magneticFieldValues = new float[3];
     private boolean isCameraPermissionGrant = false;
     private boolean isStoragePermissionGrant = false;
+    SensorManager sensorManager;
     private AutoFitTextureView mTextureView;
     private Handler mCameraHandler;
     private String mCameraId;
@@ -131,6 +145,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void findViews() {
         mTextureView = findViewById(R.id.textureView);
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        azimuthText = findViewById(R.id.one);
+        pitchText = findViewById(R.id.two);
+        rollText = findViewById(R.id.three);
     }
 
     private boolean isPermissionGranted(String permission, int requestCode) {
@@ -174,7 +192,8 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 
         if (isPermissionGranted(Manifest.permission.CAMERA, REQUEST_CODE_CAMERA) &&
-                isPermissionGranted(Manifest.permission.READ_EXTERNAL_STORAGE, REQUEST_CODE_ACCESS_STORAGE)) {
+                isPermissionGranted(Manifest.permission.READ_EXTERNAL_STORAGE, REQUEST_CODE_ACCESS_STORAGE) &&
+                isPermissionGranted(Manifest.permission.WRITE_EXTERNAL_STORAGE, REQUEST_CODE_ACCESS_STORAGE)) {
             startCameraThread();
 
             if (mTextureView.isAvailable()) {
@@ -185,7 +204,16 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 mTextureView.setSurfaceTextureListener(mTextureListener);
             }
+
+            sensorManager.registerListener(this,sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),SensorManager.SENSOR_DELAY_NORMAL);
+            sensorManager.registerListener(this,sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),SensorManager.SENSOR_DELAY_NORMAL);
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        sensorManager.unregisterListener(this);
     }
 
     private void startPreview() {
@@ -288,7 +316,6 @@ public class MainActivity extends AppCompatActivity {
     private void capture() {
         try {
             CaptureRequest.Builder mCaptureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
-            int rotation = getWindowManager().getDefaultDisplay().getRotation();
             mCaptureBuilder.addTarget(mImageReader.getSurface());
             mCaptureBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATION.get(rotation));
             CameraCaptureSession.CaptureCallback captureCallback = new CameraCaptureSession.CaptureCallback() {
@@ -354,6 +381,50 @@ public class MainActivity extends AppCompatActivity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
     }
 
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        float[] values = new float[3];
+        float[] R = new float[9];
+        switch (event.sensor.getType()){
+            case Sensor.TYPE_ACCELEROMETER:
+                accelerometerValues = event.values;
+                break;
+            case Sensor.TYPE_MAGNETIC_FIELD:
+                magneticFieldValues = event.values;
+                break;
+        }
+        SensorManager.getRotationMatrix(R,null,accelerometerValues,magneticFieldValues);
+        SensorManager.getOrientation(R,values);
+
+        azimuth = (int)Math.toDegrees(values[0]);
+        pitch = (int)Math.toDegrees(values[1]);
+        roll = (int)Math.toDegrees(values[2]);
+
+        int orientation = DirectionVerifier.getOrientation(values);
+
+        if (DirectionVerifier.mask(orientation,DirectionVerifier.MASK_ROTATION)
+                == DirectionVerifier.ROTATION_CLOCKWISE)
+            rotation = 90;
+        else if (DirectionVerifier.mask(orientation,DirectionVerifier.MASK_ROTATION)
+                == DirectionVerifier.ROTATION_ANTI_CLOCKWISE)
+            rotation = 270;
+        else if (DirectionVerifier.mask(orientation,DirectionVerifier.MASK_ROTATION)
+                == DirectionVerifier.ROTATION_REVERSE)
+            rotation = 180;
+        else if (DirectionVerifier.mask(orientation,DirectionVerifier.MASK_ROTATION)
+                == DirectionVerifier.ROTATION_NORMAL)
+            rotation = 0;
+
+//        azimuthText.setText(String.valueOf(azimuth));
+//        pitchText.setText(String.valueOf(pitch));
+//        rollText.setText(String.valueOf(roll));
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
+
     private class imageSaver implements Runnable {
 
         private Image mImage;
@@ -395,8 +466,7 @@ public class MainActivity extends AppCompatActivity {
             }
             ContentValues values = new ContentValues();
             values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
-            int rotation = getWindowManager().getDefaultDisplay().getRotation();
-            values.put(MediaStore.Images.Media.ORIENTATION, ORIENTATION.get(rotation));
+//            values.put(MediaStore.Images.Media.ORIENTATION, ORIENTATION.get(rotation));
             values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
             values.put(MediaStore.Images.Media.DATA, filename);
             values.put(MediaStore.Images.Media.DISPLAY_NAME, "IMG_" + timeStamp);

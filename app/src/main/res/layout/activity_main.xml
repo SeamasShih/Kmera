@@ -9,6 +9,36 @@
     <com.honhai.foxconn.kmera.AutoFitTextureView
         android:id="@+id/textureView"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/one"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:background="@android:color/white"
+        android:layout_margin="10dp"/>
+
+    <TextView
+        android:id="@+id/two"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/one"
+        app:layout_constraintEnd_toStartOf="@id/three"
+        android:background="@android:color/white"
+        android:layout_margin="10dp"/>
+
+    <TextView
+        android:id="@+id/three"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/two"
+        android:background="@android:color/white"
+        android:layout_margin="10dp"/>
 
 </android.support.constraint.ConstraintLayout>
