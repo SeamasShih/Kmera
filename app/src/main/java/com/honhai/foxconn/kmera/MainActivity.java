@@ -178,7 +178,9 @@ public class MainActivity extends AppCompatActivity {
             startCameraThread();
 
             if (mTextureView.isAvailable()) {
-                setupCamera(mTextureView.getWidth(), mTextureView.getHeight());
+                if (mCameraId == null) {
+                    setupCamera(mTextureView.getWidth(), mTextureView.getHeight());
+                }
                 openCamera();
             } else {
                 mTextureView.setSurfaceTextureListener(mTextureListener);
