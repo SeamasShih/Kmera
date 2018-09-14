@@ -34,7 +34,6 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.Surface;
@@ -62,7 +61,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private final String TAG = "DEBUG";
     private final int REQUEST_CODE_CAMERA = 1;
-    private final int REQUEST_CODE_ACCESS_STORAGE = 2;
+    private final int REQUEST_CODE_READ_STORAGE = 2;
+    private final int REQUEST_CODE_WRITE_STORAGE = 3;
     private static final SparseIntArray ORIENTATION = new SparseIntArray();
 
     static {
@@ -174,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 else
                     isCameraPermissionGrant = true;
                 break;
-            case REQUEST_CODE_ACCESS_STORAGE:
+            case REQUEST_CODE_READ_STORAGE:
                 if (grantResults[0] != PackageManager.PERMISSION_GRANTED)
                     finish();
                 else
@@ -192,8 +192,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onResume();
 
         if (isPermissionGranted(Manifest.permission.CAMERA, REQUEST_CODE_CAMERA) &&
-                isPermissionGranted(Manifest.permission.READ_EXTERNAL_STORAGE, REQUEST_CODE_ACCESS_STORAGE) &&
-                isPermissionGranted(Manifest.permission.WRITE_EXTERNAL_STORAGE, REQUEST_CODE_ACCESS_STORAGE)) {
+                isPermissionGranted(Manifest.permission.READ_EXTERNAL_STORAGE, REQUEST_CODE_READ_STORAGE) &&
+                isPermissionGranted(Manifest.permission.WRITE_EXTERNAL_STORAGE, REQUEST_CODE_WRITE_STORAGE)) {
             startCameraThread();
 
             if (mTextureView.isAvailable()) {
@@ -472,6 +472,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             values.put(MediaStore.Images.Media.DISPLAY_NAME, "IMG_" + timeStamp);
             ContentResolver cr = MainActivity.this.getContentResolver();
             cr.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+            mImage.close();
         }
     }
 }
