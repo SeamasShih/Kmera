@@ -63,19 +63,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private final String TAG = "DEBUG";
     private final int REQUEST_CODE_CAMERA = 1;
     private final int REQUEST_CODE_ACCESS_STORAGE = 2;
-    private static final SparseIntArray ORIENTATION = new SparseIntArray();
-
-    static {
-        ORIENTATION.append(0, 90);
-        ORIENTATION.append(90, 180);
-        ORIENTATION.append(180, 270);
-        ORIENTATION.append(270, 0);
-    }
+//    private static final SparseIntArray ORIENTATION = new SparseIntArray();
+//
+//    static {
+//        ORIENTATION.append(0, 90);
+//        ORIENTATION.append(90, 180);
+//        ORIENTATION.append(180, 270);
+//        ORIENTATION.append(270, 0);
+//    }
 
     TextView azimuthText , pitchText , rollText;
 
     int azimuth,pitch,roll;
     int rotation;
+    int cameraOrientation;
     float[] accelerometerValues = new float[3];
     float[] magneticFieldValues = new float[3];
     private boolean isCameraPermissionGrant = false;
@@ -283,6 +284,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 mTextureView.setAspectRatio(mPreViewSize.getHeight(), mPreViewSize.getWidth());
                 setupImageReader();
                 mCameraId = id;
+                cameraOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
             }
         } catch (CameraAccessException | NullPointerException e) {
             e.printStackTrace();
@@ -317,7 +319,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         try {
             CaptureRequest.Builder mCaptureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             mCaptureBuilder.addTarget(mImageReader.getSurface());
-            mCaptureBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATION.get(rotation));
+            mCaptureBuilder.set(CaptureRequest.JPEG_ORIENTATION, rotation);
             CameraCaptureSession.CaptureCallback captureCallback = new CameraCaptureSession.CaptureCallback() {
                 @Override
                 public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
@@ -404,16 +406,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if (DirectionVerifier.mask(orientation,DirectionVerifier.MASK_ROTATION)
                 == DirectionVerifier.ROTATION_CLOCKWISE)
-            rotation = 90;
+            rotation = 90 + cameraOrientation;
         else if (DirectionVerifier.mask(orientation,DirectionVerifier.MASK_ROTATION)
                 == DirectionVerifier.ROTATION_ANTI_CLOCKWISE)
-            rotation = 270;
+            rotation = 270 + cameraOrientation;
         else if (DirectionVerifier.mask(orientation,DirectionVerifier.MASK_ROTATION)
                 == DirectionVerifier.ROTATION_REVERSE)
-            rotation = 180;
+            rotation = 180 + cameraOrientation;
         else if (DirectionVerifier.mask(orientation,DirectionVerifier.MASK_ROTATION)
                 == DirectionVerifier.ROTATION_NORMAL)
-            rotation = 0;
+            rotation = cameraOrientation;
 
 //        azimuthText.setText(String.valueOf(azimuth));
 //        pitchText.setText(String.valueOf(pitch));
