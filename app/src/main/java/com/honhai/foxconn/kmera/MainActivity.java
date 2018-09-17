@@ -34,6 +34,7 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.Surface;
@@ -41,6 +42,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -73,7 +75,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     TextView azimuthText , pitchText , rollText;
-
+    SeekBar focusBar;
+    List<CaptureRequest.Key<?>> characteristicsKeyList;
+    InfoView infoView;
+    int focusConvert = 10000000;
     int azimuth,pitch,roll;
     int rotation;
     int cameraOrientation;
@@ -150,6 +155,34 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         azimuthText = findViewById(R.id.one);
         pitchText = findViewById(R.id.two);
         rollText = findViewById(R.id.three);
+        focusBar = findViewById(R.id.focusBar);
+        infoView = findViewById(R.id.infoView);
+
+        focusBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (mCaptureRequestBuilder != null) {
+                    try {
+                        float focusDistance = (float) progress / focusConvert;
+                        Log.d(TAG, "onProgressChanged: focusDistance : " + focusDistance + ", progress : " + progress);
+                        mCaptureRequestBuilder.set(CaptureRequest.LENS_FOCUS_DISTANCE, focusDistance);
+                        mCameraCaptureSession.setRepeatingRequest(mCaptureRequestBuilder.build(), null, mCameraHandler);
+                    } catch (CameraAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
     }
 
     private boolean isPermissionGranted(String permission, int requestCode) {
@@ -223,6 +256,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Surface previewSurface = new Surface(mSurfaceTexture);
         try {
             mCaptureRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+
+            mCaptureRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_OFF);
             mCaptureRequestBuilder.addTarget(previewSurface);
             mCameraDevice.createCaptureSession(Arrays.asList(previewSurface, mImageReader.getSurface()), new CameraCaptureSession.StateCallback() {
                 @Override
@@ -275,6 +310,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (face != null && face == CameraCharacteristics.LENS_FACING_FRONT)
                     continue;
 
+                characteristicsKeyList = characteristics.getAvailableCaptureRequestKeys();
+                characteristicsKeyList.forEach(key -> Log.d(TAG, "setupCamera: key : " + key.getName()));
+                Log.d(TAG, "setupCamera: characteristicsKeyList.contains(CaptureRequest.LENS_FOCUS_DISTANCE) :  "
+                        + characteristicsKeyList.contains(CaptureRequest.LENS_FOCUS_DISTANCE));
+
+//                float hardLevel = characteristics.get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL);
+//                Log.d(TAG, "setupCamera: hardLevel : " + hardLevel );
+//                int[] capabilities = characteristics.get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES);
+//                for (int capability : capabilities) {
+//                    Log.d(TAG, "setupCamera: capability : " + capability);
+//                }
+
+                float minFocus = characteristics.get(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE);
+                float maxFocus = characteristics.get(CameraCharacteristics.LENS_INFO_HYPERFOCAL_DISTANCE);
+                focusBar.setMax((int) minFocus * focusConvert);
+                focusBar.setMin((int) maxFocus * focusConvert);
+                Log.d(TAG, "setupCamera: minFocus + " + focusBar.getMin() + ", maxFocus : " + focusBar.getMax());
+
                 StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
                 if (map == null) throw new NullPointerException();
                 mPreViewSize = getOptimumSize(map.getOutputSizes(SurfaceTexture.class), width, height);
@@ -282,6 +335,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         (o1, o2) -> Long.signum(o1.getWidth() * o1.getHeight() - o2.getHeight() * o2.getWidth()));
 
                 mTextureView.setAspectRatio(mPreViewSize.getHeight(), mPreViewSize.getWidth());
+                infoView.setAspectRatio(mPreViewSize.getHeight(), mPreViewSize.getWidth());
                 setupImageReader();
                 mCameraId = id;
                 cameraOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
