@@ -37,18 +37,18 @@ public class GearView extends View {
     }
 
 
-    OnSpinListener mSpinListener;
-    Paint white , black;
-    Point c;
-    Point touch;
-    Point spin;
-    int r;
-    boolean isBig = true , isShift;
-    float value , maxValue = 100 , minValue = 0;
-    int tTheta = 0 , sTheta = 0 ,oTheta, theta = 0;
-    Region circleB , circleS;
-    Path pathB , pathS;
-    int rate = 5;
+    private OnSpinListener mSpinListener;
+    private Paint white , black;
+    private Point c;
+    private Point touch;
+    private Point spin;
+    private int r;
+    private boolean isBig = true , isShift;
+    private float value , maxValue = 100 , minValue = 0;
+    private int tTheta = 0 , sTheta = 0 ,oTheta, theta = 0;
+    private Region circleB , circleS;
+    private Path pathB , pathS;
+    private int rate = 5;
 
     public void setPrecisionRate(int rate){
         this.rate = rate;
