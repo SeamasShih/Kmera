@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.graphics.Region;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -43,7 +42,7 @@ public class GearView extends View {
     Point spin;
     int r;
     boolean isBig = true , isShift;
-    float value , bigValue = 100 , smallValue = 0;
+    float value , maxValue = 100 , minValue = 0;
     int tTheta = 0 , sTheta = 0 ,oTheta, theta = 0;
     Region circleB , circleS;
     Path pathB , pathS;
@@ -53,12 +52,12 @@ public class GearView extends View {
         this.rate = rate;
     }
 
-    public void setBigValue(float value){
-        bigValue = value;
+    public void setMaxValue(float value){
+        maxValue = value;
     }
 
-    public void setSmallValue(float value){
-        smallValue = value;
+    public void setMinValue(float value){
+        minValue = value;
     }
 
     public float getValue(){
@@ -143,7 +142,7 @@ public class GearView extends View {
                 theta = theta < 0  ? 0 : theta;
                 theta = theta > 90 ? 90 : theta;
 //                Log.d("Seamas","Theta = " + theta);
-                value = theta*bigValue/90 + smallValue;
+                value = theta* maxValue /90 + minValue;
                 if (mSpinListener != null){
                     mSpinListener.onSpin(this);
                 }
@@ -168,6 +167,6 @@ public class GearView extends View {
     }
 
     public interface OnSpinListener{
-        void onSpin(View v);
+        void onSpin(GearView v);
     }
 }

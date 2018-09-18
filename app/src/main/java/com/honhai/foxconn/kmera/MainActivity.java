@@ -47,6 +47,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.honhai.foxconn.kmera.Tools.DirectionVerifier;
+import com.honhai.foxconn.kmera.Views.GearView;
 import com.honhai.foxconn.kmera.Views.GradientView;
 
 import java.io.File;
@@ -77,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private TextView azimuthText, pitchText, rollText;
     private GradientView gradientView;
+    private GearView gearView;
     private List<CaptureRequest.Key<?>> characteristicsKeyList;
     private SeekBar focusBar;
     private int focusConvert = 10000000;
@@ -158,29 +160,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         rollText = findViewById(R.id.three);
         focusBar = findViewById(R.id.focusBar);
         gradientView = findViewById(R.id.gradientView);
+        gearView = findViewById(R.id.gearView);
 
-        focusBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (mCaptureRequestBuilder != null) {
-                    try {
-                        float focusDistance = (float) progress / focusConvert;
-                        mCaptureRequestBuilder.set(CaptureRequest.LENS_FOCUS_DISTANCE, focusDistance);
-                        mCameraCaptureSession.setRepeatingRequest(mCaptureRequestBuilder.build(), null, mCameraHandler);
-                    } catch (CameraAccessException e) {
-                        e.printStackTrace();
-                    }
+        gearView.setOnSpinListener(v -> {
+            if (mCaptureRequestBuilder != null) {
+                try {
+                    float focusDistance = v.getValue() / focusConvert;
+                    mCaptureRequestBuilder.set(CaptureRequest.LENS_FOCUS_DISTANCE, focusDistance);
+                    mCameraCaptureSession.setRepeatingRequest(mCaptureRequestBuilder.build(), null, mCameraHandler);
+                } catch (CameraAccessException e) {
+                    e.printStackTrace();
                 }
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
             }
         });
     }
@@ -324,8 +314,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 float minFocus = characteristics.get(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE);
                 float maxFocus = characteristics.get(CameraCharacteristics.LENS_INFO_HYPERFOCAL_DISTANCE);
-                focusBar.setMax((int) minFocus * focusConvert);
-                focusBar.setMin((int) maxFocus * focusConvert);
+                gearView.setMaxValue(minFocus * focusConvert);
+                gearView.setMinValue(maxFocus * focusConvert);
                 Log.d(TAG, "setupCamera: minFocus + " + focusBar.getMin() + ", maxFocus : " + focusBar.getMax());
 
                 StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
