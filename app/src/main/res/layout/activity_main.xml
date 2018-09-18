@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:clipChildren="false">
 
     <com.honhai.foxconn.kmera.AutoFitTextureView
         android:id="@+id/textureView"
@@ -54,5 +55,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/transparent"/>
+
+    <com.honhai.foxconn.kmera.Views.GearView
+        android:id="@+id/gear"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </android.support.constraint.ConstraintLayout>

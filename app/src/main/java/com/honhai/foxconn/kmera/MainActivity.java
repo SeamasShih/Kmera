@@ -47,6 +47,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.honhai.foxconn.kmera.Tools.DirectionVerifier;
+import com.honhai.foxconn.kmera.Views.GearView;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -77,7 +78,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     TextView azimuthText , pitchText , rollText;
     SeekBar focusBar;
     List<CaptureRequest.Key<?>> characteristicsKeyList;
-    InfoView infoView;
     int focusConvert = 10000000;
     int azimuth,pitch,roll;
     int rotation;
@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main);
 
         findViews();
-        mTextureView.setOnClickListener(this::takePicture);
+//        mTextureView.setOnClickListener(this::takePicture);
     }
 
     private void findViews() {
@@ -156,7 +156,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         pitchText = findViewById(R.id.two);
         rollText = findViewById(R.id.three);
         focusBar = findViewById(R.id.focusBar);
-        infoView = findViewById(R.id.infoView);
 
         focusBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -335,7 +334,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         (o1, o2) -> Long.signum(o1.getWidth() * o1.getHeight() - o2.getHeight() * o2.getWidth()));
 
                 mTextureView.setAspectRatio(mPreViewSize.getHeight(), mPreViewSize.getWidth());
-                infoView.setAspectRatio(mPreViewSize.getHeight(), mPreViewSize.getWidth());
                 setupImageReader();
                 mCameraId = id;
                 cameraOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
@@ -471,9 +469,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 == DirectionVerifier.ROTATION_NORMAL)
             rotation = cameraOrientation;
 
-//        azimuthText.setText(String.valueOf(azimuth));
-//        pitchText.setText(String.valueOf(pitch));
-//        rollText.setText(String.valueOf(roll));
+        azimuthText.setText(String.valueOf(rotation));
+        pitchText.setText(String.valueOf(pitch));
+        rollText.setText(String.valueOf(roll));
     }
 
     @Override
