@@ -47,6 +47,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.honhai.foxconn.kmera.Tools.DirectionVerifier;
+import com.honhai.foxconn.kmera.Views.GradientView;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -59,7 +60,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener{
+public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     private final String TAG = "DEBUG";
     private final int REQUEST_CODE_CAMERA = 1;
@@ -74,19 +75,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         ORIENTATION.append(270, 0);
     }
 
-    TextView azimuthText , pitchText , rollText;
-    SeekBar focusBar;
-    List<CaptureRequest.Key<?>> characteristicsKeyList;
-    InfoView infoView;
-    int focusConvert = 10000000;
-    int azimuth,pitch,roll;
-    int rotation;
-    int cameraOrientation;
-    float[] accelerometerValues = new float[3];
-    float[] magneticFieldValues = new float[3];
+    private TextView azimuthText, pitchText, rollText;
+    private GradientView gradientView;
+    private List<CaptureRequest.Key<?>> characteristicsKeyList;
+    private SeekBar focusBar;
+    private int focusConvert = 10000000;
+    private float azimuth, pitch, roll;
+    private int rotation;
+    private int cameraOrientation;
+    private float[] accelerometerValues = new float[3];
+    private float[] magneticFieldValues = new float[3];
     private boolean isCameraPermissionGrant = false;
     private boolean isStoragePermissionGrant = false;
-    SensorManager sensorManager;
+    private SensorManager sensorManager;
     private AutoFitTextureView mTextureView;
     private Handler mCameraHandler;
     private String mCameraId;
@@ -156,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         pitchText = findViewById(R.id.two);
         rollText = findViewById(R.id.three);
         focusBar = findViewById(R.id.focusBar);
-        infoView = findViewById(R.id.infoView);
+        gradientView = findViewById(R.id.gradientView);
 
         focusBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -164,7 +165,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (mCaptureRequestBuilder != null) {
                     try {
                         float focusDistance = (float) progress / focusConvert;
-                        Log.d(TAG, "onProgressChanged: focusDistance : " + focusDistance + ", progress : " + progress);
                         mCaptureRequestBuilder.set(CaptureRequest.LENS_FOCUS_DISTANCE, focusDistance);
                         mCameraCaptureSession.setRepeatingRequest(mCaptureRequestBuilder.build(), null, mCameraHandler);
                     } catch (CameraAccessException e) {
@@ -239,8 +239,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 mTextureView.setSurfaceTextureListener(mTextureListener);
             }
 
-            sensorManager.registerListener(this,sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),SensorManager.SENSOR_DELAY_NORMAL);
-            sensorManager.registerListener(this,sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),SensorManager.SENSOR_DELAY_NORMAL);
+            sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
+            sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), SensorManager.SENSOR_DELAY_NORMAL);
         }
     }
 
@@ -335,7 +335,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         (o1, o2) -> Long.signum(o1.getWidth() * o1.getHeight() - o2.getHeight() * o2.getWidth()));
 
                 mTextureView.setAspectRatio(mPreViewSize.getHeight(), mPreViewSize.getWidth());
-                infoView.setAspectRatio(mPreViewSize.getHeight(), mPreViewSize.getWidth());
                 setupImageReader();
                 mCameraId = id;
                 cameraOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
@@ -441,7 +440,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onSensorChanged(SensorEvent event) {
         float[] values = new float[3];
         float[] R = new float[9];
-        switch (event.sensor.getType()){
+        switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
                 accelerometerValues = event.values;
                 break;
@@ -449,29 +448,31 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 magneticFieldValues = event.values;
                 break;
         }
-        SensorManager.getRotationMatrix(R,null,accelerometerValues,magneticFieldValues);
-        SensorManager.getOrientation(R,values);
+        SensorManager.getRotationMatrix(R, null, accelerometerValues, magneticFieldValues);
+        SensorManager.getOrientation(R, values);
 
-        azimuth = (int)Math.toDegrees(values[0]);
-        pitch = (int)Math.toDegrees(values[1]);
-        roll = (int)Math.toDegrees(values[2]);
+        azimuth = (float) Math.toDegrees(values[0]);
+        pitch = (float) Math.toDegrees(values[1]);
+        roll = (float) Math.toDegrees(values[2]);
 
         int orientation = DirectionVerifier.getOrientation(values);
 
-        if (DirectionVerifier.mask(orientation,DirectionVerifier.MASK_ROTATION)
+        if (DirectionVerifier.mask(orientation, DirectionVerifier.MASK_ROTATION)
                 == DirectionVerifier.ROTATION_CLOCKWISE)
             rotation = 90 + cameraOrientation;
-        else if (DirectionVerifier.mask(orientation,DirectionVerifier.MASK_ROTATION)
+        else if (DirectionVerifier.mask(orientation, DirectionVerifier.MASK_ROTATION)
                 == DirectionVerifier.ROTATION_ANTI_CLOCKWISE)
             rotation = 270 + cameraOrientation;
-        else if (DirectionVerifier.mask(orientation,DirectionVerifier.MASK_ROTATION)
+        else if (DirectionVerifier.mask(orientation, DirectionVerifier.MASK_ROTATION)
                 == DirectionVerifier.ROTATION_REVERSE)
             rotation = 180 + cameraOrientation;
-        else if (DirectionVerifier.mask(orientation,DirectionVerifier.MASK_ROTATION)
+        else if (DirectionVerifier.mask(orientation, DirectionVerifier.MASK_ROTATION)
                 == DirectionVerifier.ROTATION_NORMAL)
             rotation = cameraOrientation;
 
-//        azimuthText.setText(String.valueOf(azimuth));
+        gradientView.setGradient(azimuth, pitch, roll);
+        gradientView.setRotation(rotation);
+//        azimuthText.setText(String.valueOf(rotation));
 //        pitchText.setText(String.valueOf(pitch));
 //        rollText.setText(String.valueOf(roll));
     }
