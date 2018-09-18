@@ -64,4 +64,8 @@ public class DirectionVerifier {
     private static boolean isInner(int target, int centre) {
         return Math.abs((target - centre) % 360) < 45;
     }
+
+    public static boolean isInner(int target, int centre , int tolerance) {
+        return Math.abs((target - centre) % 360) < tolerance;
+    }
 }

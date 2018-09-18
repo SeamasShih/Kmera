@@ -1,5 +1,6 @@
 package com.honhai.foxconn.kmera.Views;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -8,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 
 import com.honhai.foxconn.kmera.Tools.DirectionVerifier;
 
@@ -16,11 +18,13 @@ public class GradientView extends View {
     private final String TAG = "GradientView";
 
     private float[] values = new float[3];
+    private float currentAngle = 0;
     private int rotation;
-    private int r;
     private int lineLength;
+    private int r;
     private int cx;
     private int cy;
+    private ValueAnimator angleAnimator;
     private Paint white;
     private Paint green;
     private Paint yellow;
@@ -44,6 +48,14 @@ public class GradientView extends View {
         yellow.setStrokeWidth(3);
         yellow.setAntiAlias(true);
         yellow.setColor(Color.argb(90, 200, 200, 30));
+
+        long animDuration = 240L;
+        angleAnimator = new ValueAnimator();
+        angleAnimator.setDuration(animDuration);
+        angleAnimator.addUpdateListener(animation -> {
+            currentAngle = (float) animation.getAnimatedValue();
+            postInvalidate();
+        });
     }
 
 
@@ -61,7 +73,12 @@ public class GradientView extends View {
         this.values[0] = a;
         this.values[1] = p;
         this.values[2] = r;
-        postInvalidate();
+
+        if (angleAnimator.isRunning()) {
+            angleAnimator.cancel();
+        }
+        angleAnimator.setFloatValues(currentAngle, values[1] + 90);
+        angleAnimator.start();
     }
 
     public void setRotation(int rotation) {
@@ -77,42 +94,41 @@ public class GradientView extends View {
 
         canvas.drawLine(-lineLength, 0, lineLength, 0, yellow);
 
-        float angle = values[1] + 90;
         if (rotation == 90 &&
                 (90 - Math.abs(values[1]) < 3 || Math.abs(values[2]) < 6 || 180 - Math.abs(values[2]) < 6)) {
             canvas.drawLine(-lineLength, 0, lineLength, 0, green);
         } else if (rotation == 90 && values[2] > 0) {
-            canvas.rotate(-angle);
+            canvas.rotate(-currentAngle);
             drawCurrentHorizonLine(canvas);
-            canvas.rotate(angle);
+            canvas.rotate(currentAngle);
         } else if (rotation == 90 && values[2] < 0) {
-            canvas.rotate(angle);
+            canvas.rotate(currentAngle);
             drawCurrentHorizonLine(canvas);
-            canvas.rotate(-angle);
+            canvas.rotate(-currentAngle);
         } else if (rotation == 180 && values[1] > 0) {
-            canvas.rotate(-angle);
+            canvas.rotate(-currentAngle);
             drawCurrentHorizonLine(canvas);
-            canvas.rotate(angle);
+            canvas.rotate(currentAngle);
         } else if (rotation == 180 && values[1] < 0) {
-            canvas.rotate(-angle);
+            canvas.rotate(-currentAngle);
             drawCurrentHorizonLine(canvas);
-            canvas.rotate(angle);
+            canvas.rotate(currentAngle);
         } else if (rotation == 270 && values[2] > 0) {
-            canvas.rotate(-angle);
+            canvas.rotate(-currentAngle);
             drawCurrentHorizonLine(canvas);
-            canvas.rotate(angle);
+            canvas.rotate(currentAngle);
         } else if (rotation == 270 && values[2] < 0) {
-            canvas.rotate(angle);
+            canvas.rotate(currentAngle);
             drawCurrentHorizonLine(canvas);
-            canvas.rotate(-angle);
+            canvas.rotate(-currentAngle);
         } else if (rotation == 360 && values[1] > 0) {
-            canvas.rotate(angle);
+            canvas.rotate(currentAngle);
             drawCurrentHorizonLine(canvas);
-            canvas.rotate(-angle);
+            canvas.rotate(-currentAngle);
         } else if (rotation == 360 && values[1] < 0) {
-            canvas.rotate(angle);
+            canvas.rotate(currentAngle);
             drawCurrentHorizonLine(canvas);
-            canvas.rotate(-angle);
+            canvas.rotate(-currentAngle);
         }
         canvas.drawLine(0, 0, 0, r * values[1] / 90, yellow);
     }
