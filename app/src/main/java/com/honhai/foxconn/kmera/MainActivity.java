@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main);
 
         findViews();
-        mTextureView.setOnClickListener(this::takePicture);
+//        mTextureView.setOnClickListener(this::takePicture);
     }
 
     private void findViews() {
