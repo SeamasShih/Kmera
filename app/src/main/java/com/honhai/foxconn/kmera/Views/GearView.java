@@ -4,10 +4,10 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.graphics.Region;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -25,29 +25,29 @@ public class GearView extends View {
         white = new Paint();
         white.setStyle(Paint.Style.FILL);
         white.setAntiAlias(true);
-        white.setColor(Color.argb(120,200,200,200));
+        white.setColor(Color.argb(150,200,200,200));
 
         black = new Paint();
-        black.setStyle(Paint.Style.STROKE);
+        black.setStyle(Paint.Style.FILL);
         black.setStrokeWidth(3);
         black.setAntiAlias(true);
-        black.setColor(Color.BLACK);
+        black.setColor(Color.argb(120,0,0,0));
 
         c = new Point();
     }
 
-    OnSpinListener mSpinListener;
-    Paint white , black;
-    Point c;
-    Point touch;
-    Point spin;
-    int r;
-    boolean isBig = true , isShift;
-    float value , bigValue = 100 , smallValue = 0;
-    int tTheta = 0 , sTheta = 0 ,oTheta, theta = 0;
-    Region circleB , circleS;
-    Path pathB , pathS;
-    int rate = 5;
+    private OnSpinListener mSpinListener;
+    private Paint white , black;
+    private Point c;
+    private Point touch;
+    private Point spin;
+    private int r;
+    private boolean isBig = true , isShift;
+    private float value , bigValue = 100 , smallValue = 0;
+    private int tTheta = 0 , sTheta = 0 ,oTheta, theta = 0;
+    private Region circleB , circleS;
+    private Path pathB , pathS;
+    private int rate = 5;
 
     public void setPrecisionRate(int rate){
         this.rate = rate;
@@ -98,23 +98,41 @@ public class GearView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         if (isBig) {
-            canvas.drawCircle(c.x, c.y, r, white);
             canvas.save();
-            canvas.rotate(theta+90,c.x,c.y);
-            canvas.drawLine(c.x-r/4, c.y, c.x-r, c.y , black);
+            canvas.rotate(theta,c.x,c.y);
+            drawGear(canvas, r);
             canvas.restore();
-
-            //todo draw spin UI
         }
         else {
-            canvas.drawCircle(c.x, c.y, r / 2, white);
             canvas.save();
-            canvas.rotate(theta+90,c.x,c.y);
-            canvas.drawLine(c.x-r/6, c.y, c.x-r/2, c.y , black);
+            canvas.rotate(theta,c.x,c.y);
+            drawGear(canvas, r/2);
             canvas.restore();
-
-            //todo draw spin UI
         }
+    }
+
+    private void drawGear(Canvas canvas, int r){
+        Matrix matrix = new Matrix();
+        matrix.postScale(r/7,r/7);
+        Path path = new Path();
+        path.moveTo(-1.25f,1);
+        path.lineTo(-0.5f,0);
+        path.lineTo(0.5f,0);
+        path.lineTo(1.25f,1);
+        path.close();
+        path.transform(matrix);
+        canvas.save();
+        canvas.translate(c.x,c.y-r);
+            canvas.save();
+            for (int i = 0 ; i < 12 ; i++){
+                canvas.rotate(30,0,r);
+                canvas.drawPath(path,white);
+            }
+            canvas.restore();
+        canvas.drawPath(path,black);
+        canvas.translate(0,+r);
+        canvas.drawCircle(0,0, r*6/7, white);
+        canvas.restore();
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -153,7 +171,7 @@ public class GearView extends View {
                 oTheta = theta;
                 if (isShift) {
                     setGear(!isBig);
-                    Log.d("Seamas","QQ");
+//                    Log.d("Seamas","QQ");
                     return super.onTouchEvent(event);
                 }
                 break;
