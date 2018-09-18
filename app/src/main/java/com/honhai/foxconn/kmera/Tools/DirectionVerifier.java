@@ -2,6 +2,8 @@ package com.honhai.foxconn.kmera.Tools;
 
 import android.support.annotation.Nullable;
 
+import static com.honhai.foxconn.kmera.Tools.Mathematics.isInner;
+
 public class DirectionVerifier {
 
     public static final int MASK_ORIENTATION = 0b11000000;
@@ -59,9 +61,5 @@ public class DirectionVerifier {
 
     public static int mask(int value, int mask) {
         return value & mask;
-    }
-
-    private static boolean isInner(int target, int centre) {
-        return Math.abs((target - centre) % 360) < 45;
     }
 }

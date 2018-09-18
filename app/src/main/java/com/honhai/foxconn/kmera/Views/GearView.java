@@ -36,29 +36,30 @@ public class GearView extends View {
         c = new Point();
     }
 
-    private OnSpinListener mSpinListener;
-    private Paint white , black;
-    private Point c;
-    private Point touch;
-    private Point spin;
-    private int r;
-    private boolean isBig = true , isShift;
-    private float value , bigValue = 100 , smallValue = 0;
-    private int tTheta = 0 , sTheta = 0 ,oTheta, theta = 0;
-    private Region circleB , circleS;
-    private Path pathB , pathS;
-    private int rate = 5;
+
+    OnSpinListener mSpinListener;
+    Paint white , black;
+    Point c;
+    Point touch;
+    Point spin;
+    int r;
+    boolean isBig = true , isShift;
+    float value , maxValue = 100 , minValue = 0;
+    int tTheta = 0 , sTheta = 0 ,oTheta, theta = 0;
+    Region circleB , circleS;
+    Path pathB , pathS;
+    int rate = 5;
 
     public void setPrecisionRate(int rate){
         this.rate = rate;
     }
 
-    public void setBigValue(float value){
-        bigValue = value;
+    public void setMaxValue(float value){
+        maxValue = value;
     }
 
-    public void setSmallValue(float value){
-        smallValue = value;
+    public void setMinValue(float value){
+        minValue = value;
     }
 
     public float getValue(){
@@ -161,7 +162,7 @@ public class GearView extends View {
                 theta = theta < 0  ? 0 : theta;
                 theta = theta > 90 ? 90 : theta;
 //                Log.d("Seamas","Theta = " + theta);
-                value = theta*bigValue/90 + smallValue;
+                value = theta* maxValue /90 + minValue;
                 if (mSpinListener != null){
                     mSpinListener.onSpin(this);
                 }
@@ -186,6 +187,6 @@ public class GearView extends View {
     }
 
     public interface OnSpinListener{
-        void onSpin(View v);
+        void onSpin(GearView v);
     }
 }
