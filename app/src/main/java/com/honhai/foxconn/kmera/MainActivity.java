@@ -80,7 +80,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private GradientView gradientView;
     private GearView gearView;
     private List<CaptureRequest.Key<?>> characteristicsKeyList;
-    private SeekBar focusBar;
     private int focusConvert = 10000000;
     private float azimuth, pitch, roll;
     private int rotation;
@@ -158,7 +157,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         azimuthText = findViewById(R.id.one);
         pitchText = findViewById(R.id.two);
         rollText = findViewById(R.id.three);
-        focusBar = findViewById(R.id.focusBar);
         gradientView = findViewById(R.id.gradientView);
         gearView = findViewById(R.id.gearView);
 
@@ -316,7 +314,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 float maxFocus = characteristics.get(CameraCharacteristics.LENS_INFO_HYPERFOCAL_DISTANCE);
                 gearView.setMaxValue(minFocus * focusConvert);
                 gearView.setMinValue(maxFocus * focusConvert);
-                Log.d(TAG, "setupCamera: minFocus + " + focusBar.getMin() + ", maxFocus : " + focusBar.getMax());
 
                 StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
                 if (map == null) throw new NullPointerException();
