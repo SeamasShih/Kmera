@@ -7,6 +7,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Sensor;
@@ -32,8 +33,11 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
+import android.support.constraint.ConstraintSet;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.transition.TransitionManager;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
@@ -42,11 +46,11 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.honhai.foxconn.kmera.Tools.DirectionVerifier;
+import com.honhai.foxconn.kmera.Views.FuncSelectView;
 import com.honhai.foxconn.kmera.Views.GearView;
 import com.honhai.foxconn.kmera.Views.GradientView;
 
@@ -76,16 +80,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         ORIENTATION.append(270, 0);
     }
 
+    private ConstraintLayout constraintLayout;
+    private ConstraintSet constraintSetH = new ConstraintSet();
+    private ConstraintSet constraintSetV = new ConstraintSet();
     private TextView azimuthText, pitchText, rollText;
     private GradientView gradientView;
     private GearView gearView;
+    private FuncSelectView funcSelectView;
     private List<CaptureRequest.Key<?>> characteristicsKeyList;
-    private int focusConvert = 10000000;
-    private float azimuth, pitch, roll;
-    private int rotation;
-    private int cameraOrientation;
     private float[] accelerometerValues = new float[3];
     private float[] magneticFieldValues = new float[3];
+    private float azimuth, pitch, roll;
+    private int currentOrientation;
+    private int focusConvert = 10000000;
+    private int rotation;
+    private int cameraOrientation;
     private boolean isCameraPermissionGrant = false;
     private boolean isStoragePermissionGrant = false;
     private SensorManager sensorManager;
@@ -145,20 +154,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setFullScreen();
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main_vertical);
 
         findViews();
-//        mTextureView.setOnClickListener(this::takePicture);
+        mTextureView.setOnClickListener(this::takePicture);
+        currentOrientation = getResources().getConfiguration().orientation;
+        constraintSetH.clone(this, R.layout.activity_main_horizon);
+        constraintSetV.clone(constraintLayout);
     }
 
     private void findViews() {
-        mTextureView = findViewById(R.id.textureView);
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        constraintLayout = findViewById(R.id.constraintV);
+        mTextureView = findViewById(R.id.textureView);
         azimuthText = findViewById(R.id.one);
         pitchText = findViewById(R.id.two);
         rollText = findViewById(R.id.three);
         gradientView = findViewById(R.id.gradientView);
         gearView = findViewById(R.id.gearView);
+//        funcSelectView = findViewById(R.id.funcSelectView);
 
         gearView.setOnSpinListener(v -> {
             if (mCaptureRequestBuilder != null) {
@@ -456,6 +470,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         else if (DirectionVerifier.mask(orientation, DirectionVerifier.MASK_ROTATION)
                 == DirectionVerifier.ROTATION_NORMAL)
             rotation = cameraOrientation;
+
+        if (rotation == 90 || rotation == 270) {
+            if (currentOrientation != Configuration.ORIENTATION_PORTRAIT) {
+                TransitionManager.beginDelayedTransition(constraintLayout);
+                currentOrientation = Configuration.ORIENTATION_PORTRAIT;
+                constraintSetV.applyTo(constraintLayout);
+            }
+        } else if (rotation == 180 || rotation == 360) {
+            if (currentOrientation != Configuration.ORIENTATION_LANDSCAPE) {
+                TransitionManager.beginDelayedTransition(constraintLayout);
+                currentOrientation = Configuration.ORIENTATION_LANDSCAPE;
+                constraintSetH.applyTo(constraintLayout);
+            }
+        }
 
         gradientView.setGradient(azimuth, pitch, roll);
         gradientView.setRotation(rotation);

@@ -77,7 +77,7 @@ public class GradientView extends View {
         if (angleAnimator.isRunning()) {
             angleAnimator.cancel();
         }
-        angleAnimator.setFloatValues(currentAngle, values[1] + 90);
+        angleAnimator.setFloatValues(currentAngle, values[1] + 90 + (rotation - 90) % 180);
         angleAnimator.start();
     }
 
@@ -96,45 +96,65 @@ public class GradientView extends View {
 
         if (rotation == 90 &&
                 (90 - Math.abs(values[1]) < 3 || Math.abs(values[2]) < 6 || 180 - Math.abs(values[2]) < 6)) {
-            canvas.drawLine(-lineLength, 0, lineLength, 0, green);
+            drawCurrentHorizonLine(canvas, green);
         } else if (rotation == 90 && values[2] > 0) {
             canvas.rotate(-currentAngle);
-            drawCurrentHorizonLine(canvas);
+            drawCurrentHorizonLine(canvas, white);
             canvas.rotate(currentAngle);
         } else if (rotation == 90 && values[2] < 0) {
             canvas.rotate(currentAngle);
-            drawCurrentHorizonLine(canvas);
+            drawCurrentHorizonLine(canvas, white);
             canvas.rotate(-currentAngle);
         } else if (rotation == 180 && values[1] > 0) {
             canvas.rotate(-currentAngle);
-            drawCurrentHorizonLine(canvas);
+            if (values[1] < 3f)
+                drawCurrentHorizonLine(canvas, green);
+            else
+                drawCurrentHorizonLine(canvas, white);
             canvas.rotate(currentAngle);
         } else if (rotation == 180 && values[1] < 0) {
             canvas.rotate(-currentAngle);
-            drawCurrentHorizonLine(canvas);
+            if (values[1] > -3f)
+                drawCurrentHorizonLine(canvas, green);
+            else
+                drawCurrentHorizonLine(canvas, white);
             canvas.rotate(currentAngle);
+        } else if (rotation == 270 &&
+                (90 - Math.abs(values[1]) < 3 || Math.abs(values[2]) < 6 || 180 - Math.abs(values[2]) < 6)) {
+            drawCurrentHorizonLine(canvas, green);
         } else if (rotation == 270 && values[2] > 0) {
             canvas.rotate(-currentAngle);
-            drawCurrentHorizonLine(canvas);
+            drawCurrentHorizonLine(canvas, white);
             canvas.rotate(currentAngle);
         } else if (rotation == 270 && values[2] < 0) {
             canvas.rotate(currentAngle);
-            drawCurrentHorizonLine(canvas);
+            drawCurrentHorizonLine(canvas, white);
             canvas.rotate(-currentAngle);
         } else if (rotation == 360 && values[1] > 0) {
             canvas.rotate(currentAngle);
-            drawCurrentHorizonLine(canvas);
+            if (values[1] < 3f)
+                drawCurrentHorizonLine(canvas, green);
+            else
+                drawCurrentHorizonLine(canvas, white);
             canvas.rotate(-currentAngle);
         } else if (rotation == 360 && values[1] < 0) {
             canvas.rotate(currentAngle);
-            drawCurrentHorizonLine(canvas);
+            if (values[1] > -3f)
+                drawCurrentHorizonLine(canvas, green);
+            else
+                drawCurrentHorizonLine(canvas, white);
             canvas.rotate(-currentAngle);
         }
-        canvas.drawLine(0, 0, 0, r * values[1] / 90, yellow);
+
+        if (rotation == 90 || rotation == 270) {
+            canvas.drawLine(0, 0, 0, r * values[1] / 90, yellow);
+        } else if (rotation == 180 || rotation == 360) {
+            canvas.drawLine(0, 0, 0, r * values[2] / 90, yellow);
+        }
     }
 
-    private void drawCurrentHorizonLine(Canvas canvas) {
-        canvas.drawLine(-lineLength, 0, -r, 0, white);
-        canvas.drawLine(r, 0, lineLength, 0, white);
+    private void drawCurrentHorizonLine(Canvas canvas, Paint paint) {
+        canvas.drawLine(-lineLength, 0, -r, 0, paint);
+        canvas.drawLine(r, 0, lineLength, 0, paint);
     }
 }
