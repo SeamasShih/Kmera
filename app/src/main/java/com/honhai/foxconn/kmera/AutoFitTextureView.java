@@ -18,6 +18,7 @@ package com.honhai.foxconn.kmera;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.TextureView;
 
 /**
@@ -25,6 +26,7 @@ import android.view.TextureView;
  */
 public class AutoFitTextureView extends TextureView {
 
+    private final String TAG = "AutoFitTextureView";
     private int mRatioWidth = 0;
     private int mRatioHeight = 0;
 
@@ -72,5 +74,4 @@ public class AutoFitTextureView extends TextureView {
             }
         }
     }
-
 }
