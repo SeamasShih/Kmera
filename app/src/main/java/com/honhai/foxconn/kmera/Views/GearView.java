@@ -66,6 +66,12 @@ public class GearView extends View {
         return value;
     }
 
+    public void setValue(float value){
+        this.value = value;
+        theta =(int) (90 * (value - minValue) / (maxValue - minValue));
+        invalidate();
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
