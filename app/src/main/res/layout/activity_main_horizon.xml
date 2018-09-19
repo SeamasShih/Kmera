@@ -63,6 +63,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <com.honhai.foxconn.kmera.Views.SnapView
+        android:id="@+id/snapView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <!--<com.honhai.foxconn.kmera.Views.FuncSelectView-->
         <!--android:id="@+id/funcSelectView"-->
         <!--android:layout_width="5dp"-->

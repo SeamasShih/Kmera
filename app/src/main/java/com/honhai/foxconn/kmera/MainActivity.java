@@ -53,6 +53,7 @@ import com.honhai.foxconn.kmera.Tools.DirectionVerifier;
 import com.honhai.foxconn.kmera.Views.FuncSelectView;
 import com.honhai.foxconn.kmera.Views.GearView;
 import com.honhai.foxconn.kmera.Views.GradientView;
+import com.honhai.foxconn.kmera.Views.SnapView;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -80,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         ORIENTATION.append(270, 0);
     }
 
+    private SnapView snapView;
     private ConstraintLayout constraintLayout;
     private ConstraintSet constraintSetH = new ConstraintSet();
     private ConstraintSet constraintSetV = new ConstraintSet();
@@ -157,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main_vertical);
 
         findViews();
-        mTextureView.setOnClickListener(this::takePicture);
+        snapView.setOnClickListener(this::takePicture);
         currentOrientation = getResources().getConfiguration().orientation;
         constraintSetH.clone(this, R.layout.activity_main_horizon);
         constraintSetV.clone(constraintLayout);
@@ -172,6 +174,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         rollText = findViewById(R.id.three);
         gradientView = findViewById(R.id.gradientView);
         gearView = findViewById(R.id.gearView);
+        snapView = findViewById(R.id.snapView);
 //        funcSelectView = findViewById(R.id.funcSelectView);
 
         gearView.setOnSpinListener(v -> {
