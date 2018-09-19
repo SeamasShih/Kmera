@@ -5,7 +5,6 @@
     android:id="@+id/constraintV"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
     tools:context=".MainActivity">
 
     <com.honhai.foxconn.kmera.AutoFitTextureView
@@ -49,16 +48,17 @@
         android:id="@+id/gradientView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@android:color/transparent"/>
+        android:background="@android:color/transparent" />
 
     <com.honhai.foxconn.kmera.Views.GearView
         android:id="@+id/gearView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!--<com.honhai.foxconn.kmera.Views.FuncSelectView-->
-        <!--android:id="@+id/funcSelectView"-->
-        <!--android:layout_width="5dp"-->
-        <!--android:layout_height="5dp" />-->
+    <com.honhai.foxconn.kmera.Views.MyRecyclerView
+        android:id="@+id/myRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

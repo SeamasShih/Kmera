@@ -37,6 +37,8 @@ import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.transition.TransitionManager;
 import android.util.Log;
 import android.util.Size;
@@ -49,10 +51,12 @@ import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.honhai.foxconn.kmera.Adapter.FuncSelectAdapter;
 import com.honhai.foxconn.kmera.Tools.DirectionVerifier;
-import com.honhai.foxconn.kmera.Views.FuncSelectView;
+import com.honhai.foxconn.kmera.Tools.FuncSelectListener;
 import com.honhai.foxconn.kmera.Views.GearView;
 import com.honhai.foxconn.kmera.Views.GradientView;
+import com.honhai.foxconn.kmera.Views.MyRecyclerView;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -63,14 +67,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener {
+public class MainActivity extends AppCompatActivity implements SensorEventListener, FuncSelectListener {
 
     private final String TAG = "DEBUG";
     private final int REQUEST_CODE_CAMERA = 1;
     private final int REQUEST_CODE_READ_STORAGE = 2;
     private final int REQUEST_CODE_WRITE_STORAGE = 3;
+    public static final int FUNCTION_WB = 0;
+    public static final int FUNCTION_EV = 1;
+    public static final int FUNCTION_ISO = 2;
+    public static final int FUNCTION_S = 3;
+    public static final int FUNCTION_AF = 4;
+
     private static final SparseIntArray ORIENTATION = new SparseIntArray();
 
     static {
@@ -86,12 +97,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TextView azimuthText, pitchText, rollText;
     private GradientView gradientView;
     private GearView gearView;
-    private FuncSelectView funcSelectView;
+    private MyRecyclerView myRecyclerView;
     private List<CaptureRequest.Key<?>> characteristicsKeyList;
     private float[] accelerometerValues = new float[3];
     private float[] magneticFieldValues = new float[3];
     private float azimuth, pitch, roll;
     private int currentOrientation;
+    private int currentFunction = 0;
     private int focusConvert = 10000000;
     private int rotation;
     private int cameraOrientation;
@@ -172,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         rollText = findViewById(R.id.three);
         gradientView = findViewById(R.id.gradientView);
         gearView = findViewById(R.id.gearView);
-//        funcSelectView = findViewById(R.id.funcSelectView);
+        myRecyclerView = findViewById(R.id.myRecyclerView);
 
         gearView.setOnSpinListener(v -> {
             if (mCaptureRequestBuilder != null) {
@@ -185,6 +197,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
             }
         });
+
+        LinkedHashMap<Integer, Integer> functionMap = new LinkedHashMap<>();
+        functionMap.put(FUNCTION_WB, R.drawable.vd_wb);
+        functionMap.put(FUNCTION_EV, R.drawable.vd_ev);
+        functionMap.put(FUNCTION_ISO, R.drawable.vd_iso);
+        functionMap.put(FUNCTION_S, R.drawable.vd_s);
+        functionMap.put(FUNCTION_AF, R.drawable.vd_af);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        linearLayoutManager.setSmoothScrollbarEnabled(true);
+        myRecyclerView.setLayoutManager(linearLayoutManager);
+        myRecyclerView.setAdapter(new FuncSelectAdapter(functionMap));
     }
 
     private boolean isPermissionGranted(String permission, int requestCode) {
@@ -495,6 +519,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
+    }
+
+    @Override
+    public void OnSelected(int function) {
+        currentFunction = function;
+        Log.d(TAG, "OnSelected: currentFunction : " + currentFunction);
     }
 
     private class imageSaver implements Runnable {
