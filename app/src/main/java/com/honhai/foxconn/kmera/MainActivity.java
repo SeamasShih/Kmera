@@ -57,6 +57,7 @@ import com.honhai.foxconn.kmera.Tools.FuncSelectListener;
 import com.honhai.foxconn.kmera.Views.GearView;
 import com.honhai.foxconn.kmera.Views.GradientView;
 import com.honhai.foxconn.kmera.Views.MyRecyclerView;
+import com.honhai.foxconn.kmera.Views.SnapView;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -91,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         ORIENTATION.append(270, 0);
     }
 
+    private SnapView snapView;
     private ConstraintLayout constraintLayout;
     private ConstraintSet constraintSetH = new ConstraintSet();
     private ConstraintSet constraintSetV = new ConstraintSet();
@@ -169,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main_vertical);
 
         findViews();
-        mTextureView.setOnClickListener(this::takePicture);
+        snapView.setOnClickListener(this::takePicture);
         currentOrientation = getResources().getConfiguration().orientation;
         constraintSetH.clone(this, R.layout.activity_main_horizon);
         constraintSetV.clone(constraintLayout);
@@ -185,6 +187,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         gradientView = findViewById(R.id.gradientView);
         gearView = findViewById(R.id.gearView);
         myRecyclerView = findViewById(R.id.myRecyclerView);
+        snapView = findViewById(R.id.snapView);
 
         gearView.setOnSpinListener(v -> {
             if (mCaptureRequestBuilder != null) {
@@ -375,7 +378,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private void lockFocus() {
         try {
-            mCaptureRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
+//            mCaptureRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
             mCameraCaptureSession.capture(mCaptureRequestBuilder.build(), mCaptureCallback, mCameraHandler);
         } catch (CameraAccessException e) {
             e.printStackTrace();
