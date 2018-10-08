@@ -3,24 +3,17 @@ package com.honhai.foxconn.kmera.Adapter;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.honhai.foxconn.kmera.MainActivity;
 import com.honhai.foxconn.kmera.R;
 import com.honhai.foxconn.kmera.Tools.FuncSelectListener;
 
-import java.util.Comparator;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class FuncSelectAdapter extends RecyclerView.Adapter<FuncSelectAdapter.ViewHolder> {
 
@@ -61,7 +54,6 @@ public class FuncSelectAdapter extends RecyclerView.Adapter<FuncSelectAdapter.Vi
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
-
         ImageView imageView;
 
         ViewHolder(@NonNull View itemView) {
